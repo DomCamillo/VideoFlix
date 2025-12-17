@@ -1,8 +1,10 @@
 from rest_framework import serializers
+from django.core.mail import send_mail ,EmailMessage
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class RegistrationSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
     confirmed_password = serializers.CharField(write_only=True)
 
     class Meta:

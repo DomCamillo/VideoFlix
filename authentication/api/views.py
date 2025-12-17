@@ -1,5 +1,11 @@
 from rest_framework import status
+from authentication.models import EmailVerificationToken  # Für get_object_or_404
+from authentication.api.serializers import RegistrationSerializer
+from ..send_mail import send_verification_email
+from django.core.mail import send_mail ,EmailMessage
 from rest_framework.views import APIView
+from django.shortcuts import get_object_or_404
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -12,27 +18,49 @@ from rest_framework_simplejwt.views import (
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
-class RegistrationView(APIView):
-    permission_classes = [AllowAny]
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def register_user(request):
+    serializer = RegistrationSerializer(data=request.data)
 
-    def post(self, request):
-        serializer = RegistrationSerializer(data=request.data)
+    if serializer.is_valid():
+        user = serializer.save()
+        try:
+            send_verification_email(user, request)
+            return Response({
+                'message': 'Registrierung erfolgreich! Bitte überprüfe deine Emails.',
+                'email': user.email
+            }, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            user.delete()
+            return Response({
+                'error': 'Email konnte nicht versendet werden. Bitte versuche es später erneut.'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        if serializer.is_valid():
-            user = serializer.save()
-            refresh = RefreshToken.for_user(user)
-            activation_token = str(refresh.access_token)
-            response_data = {
-                'user': {
-                    'id': user.id,
-                    'email': user.email
-                },
-                'token': activation_token
-            }
-            return Response(response_data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(['GET'])
+
+@permission_classes([AllowAny])
+def verify_email(request, token):
+    verification_token = get_object_or_404(EmailVerificationToken, token=token)
+
+    if not verification_token.is_valid():
+        return Response({
+            'error': 'Dieser Verifizierungslink ist abgelaufen.'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    user = verification_token.user
+    user.is_email_verified = True
+    user.is_active = True
+    user.save()
+
+    verification_token.delete()
+
+    return Response({
+        'message': 'Email erfolgreich verifiziert! Du kannst dich jetzt einloggen.'
+    }, status=status.HTTP_200_OK)
 
 class LogoutView(APIView):
     """
@@ -70,7 +98,7 @@ class LoginView(TokenObtainPairView):
         refresh = serializer.validated_data['refresh']
         access = serializer.validated_data['access']
 
-        response.set_cookie( #Speichere diesen Token in einem HttpOnly-Cookie namens access_token
+        response.set_cookie(
             key="acces_token",
             httponly=True,
             value=str(access),
@@ -84,9 +112,6 @@ class LoginView(TokenObtainPairView):
             secure=True,
             samesite='Lax'
         )
-        #response.set_cookie() ist eine Django-Funktion, mit der du dem Browser Cookies mitschickst.
-        #Diese Cookies werden danach automatisch vom Browser gespeichert und bei jedem zukünftigen Request automatisch wieder mitgeschickt.
-
         response.data={"login": "successfully"}
         return response
 

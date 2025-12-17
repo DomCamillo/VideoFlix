@@ -7,9 +7,10 @@ from datetime import timedelta
 
 
 
+
 class User(AbstractUser):
     email = models.EmailField(unique=True)
-    is_email_verified = models.BooleanField(default=False)
+    is_active= models.BooleanField(default=False)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
 

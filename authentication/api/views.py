@@ -1,66 +1,92 @@
 from rest_framework import status
-from authentication.models import EmailVerificationToken  # Für get_object_or_404
+from authentication.models import EmailVerificationToken , User
 from authentication.api.serializers import RegistrationSerializer
+from django.utils.http import urlsafe_base64_decode
+from django.utils.encoding import force_str
 from ..send_mail import send_verification_email
-from django.core.mail import send_mail ,EmailMessage
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import RegistrationSerializer, CostumeTokenObtainPairSerializer
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-from django.contrib.auth import get_user_model
-User = get_user_model()
+
+
+
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
-def register_user(request):
+def register(request):
     serializer = RegistrationSerializer(data=request.data)
 
     if serializer.is_valid():
         user = serializer.save()
-        try:
-            send_verification_email(user, request)
-            return Response({
-                'message': 'Registrierung erfolgreich! Bitte überprüfe deine Emails.',
-                'email': user.email
-            }, status=status.HTTP_201_CREATED)
-        except Exception as e:
+        email_sent = send_verification_email(user, request)
+        if not email_sent:
             user.delete()
             return Response({
-                'error': 'Email konnte nicht versendet werden. Bitte versuche es später erneut.'
+                'error': 'Email konnte nicht versendet werden.'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        token_obj = EmailVerificationToken.objects.filter(user=user).first()
+
+        return Response({
+            'user': {
+                'id': user.id,
+                'email': user.email
+            },
+            'token': str(token_obj.token) if token_obj else None
+        }, status=status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+
+
+
 @api_view(['GET'])
-
 @permission_classes([AllowAny])
-def verify_email(request, token):
-    verification_token = get_object_or_404(EmailVerificationToken, token=token)
+def activate(request, uidb64, token):
 
-    if not verification_token.is_valid():
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
         return Response({
-            'error': 'Dieser Verifizierungslink ist abgelaufen.'
+            'error': 'ivalid link.'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        verification_token = EmailVerificationToken.objects.get(
+            user=user,
+            token=token
+        )
+    except EmailVerificationToken.DoesNotExist:
+        return Response({
+            'error': 'ivalid token'
         }, status=status.HTTP_400_BAD_REQUEST)
 
-    user = verification_token.user
-    user.is_email_verified = True
+    if not verification_token.is_valid():
+        verification_token.delete()
+        return Response({
+            'error': 'This activation link has expired.'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
     user.is_active = True
     user.save()
 
     verification_token.delete()
 
     return Response({
-        'message': 'Email erfolgreich verifiziert! Du kannst dich jetzt einloggen.'
+        'message': 'Account successfully activated.'
     }, status=status.HTTP_200_OK)
+
+
+
 
 class LogoutView(APIView):
     """
@@ -82,40 +108,64 @@ class EmailTokenObtainSerializer(TokenObtainPairSerializer):
         attrs['username'] = attrs.get('email')
         return super().validate(attrs)
 
+
+
 class LoginView(TokenObtainPairView):
     """
     An endpoint for obtaining JWT tokens and storing them in HttpOnly cookies.
     works with email and password isntead of username
     """
-    serializer_class = CostumeTokenObtainPairSerializer
+    serializer_class = EmailTokenObtainSerializer
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
 
-        response = Response({"message": "Login Successfull"})
+        try:
+            serializer.is_valid(raise_exception=True)
+        except AuthenticationFailed as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        except Exception as e:
+            return Response(
+                {"error": "Ungültige Anmeldedaten."},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
 
         refresh = serializer.validated_data['refresh']
         access = serializer.validated_data['access']
+        user = serializer.user
+
+        response = Response({
+            "detail": "Login successful",
+            "user": {
+                "id": user.id,
+                "username": user.email
+            }
+        }, status=status.HTTP_200_OK)
+
 
         response.set_cookie(
-            key="acces_token",
-            httponly=True,
+            key='access_token',
             value=str(access),
-            secure=True,
-            samesite='Lax'
-        ),
-        response.set_cookie(
-            key="refresh_token",
             httponly=True,
-            value=str(refresh),
             secure=True,
-            samesite='Lax'
+            samesite='Lax',
+            max_age=3600
         )
-        response.data={"login": "successfully"}
+
+        response.set_cookie(
+            key='refresh_token',
+            value=str(refresh),
+            httponly=True,
+            secure=True,
+            samesite='Lax',
+            max_age=86400
+        )
+
         return response
-
-
 
 
 
@@ -133,13 +183,13 @@ class CookieTokenRefreshView(TokenRefreshView):
      except:
          return Response({"detail": "Invalid refresh token "}, status=401)
 
-     acces_token = serializer.validated_data.get("access")
+     access_token = serializer.validated_data.get("access")
 
      response = Response({"message": "access token refreshed successfully"})
      response.set_cookie(
             key="acces_token",
             httponly=True,
-            value=acces_token,
+            value=access_token,
             secure=True,
             samesite='Lax'
         ),

@@ -7,15 +7,14 @@ from rest_framework_simplejwt.views import (
 )
 
 urlpatterns = [
-    path('register/', views.register_user, name='register'),
-    path('verify-email/<uuid:token>/', views.verify_email, name='verify-email'),
+    path('register/', views.register, name='register'),
+    path('activate/<uidb64>/<token>/', views.activate, name='activate-email'),
   #  path('register/', RegistrationView.as_view(), name='registration'),
     path('logout/', LogoutView.as_view(), name='token_obtain_pair'),
     path('login/', LoginView.as_view(), name='token_obtain_pair'),
-  #  path('/api/accounts/', include('drf_registration.urls')),
-  #  path('token/refresh/', CookieTokenRefreshView.as_view(), name='token_refresh'),
-  #  path('password_reset/', CookieTokenRefreshView.as_view(), name='token_refresh'),
-   # path('password_confirm/<uidb64>/<token>/', CookieTokenRefreshView.as_view(), name='token_refresh'),
+    path('token/refresh/', CookieTokenRefreshView.as_view(), name='token_refresh'),
+    path('password_reset/', CookieTokenRefreshView.as_view(), name='token_refresh'),
+    path('password_confirm/<uidb64>/<token>/', CookieTokenRefreshView.as_view(), name='token_refresh'),
 
 
 ]

@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.core.mail import send_mail ,EmailMessage
 from django.contrib.auth import get_user_model
 User = get_user_model()
+from rest_framework.exceptions import AuthenticationFailed
 
 class RegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -26,10 +27,9 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data.pop('confirmed_password')
-
         user = User.objects.create_user(
-            username=validated_data['email'],
             email=validated_data['email'],
+            username=validated_data['email'],
             password=validated_data['password'],
             is_active=False
         )
@@ -64,4 +64,31 @@ class CostumeTokenObtainPairSerializer(TokenObtainPairSerializer):
             raise serializers.ValidationError("wrong email or password")
 
         data = super().validate({"username":user.username, "password": password})
+        return data
+
+
+class EmailTokenObtainSerializer(TokenObtainPairSerializer):
+
+    username_field = 'email'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['email'] = self.fields.pop('username')
+        self.fields['email'].help_text = 'Email Adresse'
+
+    def validate(self, attrs):
+        email = attrs.get('email')
+        password = attrs.get('password')
+
+        attrs['username'] = email
+
+        try:
+            data = super().validate(attrs)
+        except Exception as e:
+            raise AuthenticationFailed('Ungültige Anmeldedaten.')
+        if not self.user.is_active:
+            raise AuthenticationFailed(
+                'Account ist noch nicht aktiviert. Bitte überprüfe deine Emails.'
+            )
+
         return data

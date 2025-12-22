@@ -3,6 +3,9 @@ from django.core.mail import send_mail ,EmailMessage
 from django.contrib.auth import get_user_model
 User = get_user_model()
 from rest_framework.exceptions import AuthenticationFailed
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+
 
 class RegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -84,11 +87,38 @@ class EmailTokenObtainSerializer(TokenObtainPairSerializer):
 
         try:
             data = super().validate(attrs)
-        except Exception as e:
-            raise AuthenticationFailed('Ungültige Anmeldedaten.')
+        except Exception:
+            raise AuthenticationFailed('invalid login data.')
         if not self.user.is_active:
             raise AuthenticationFailed(
-                'Account ist noch nicht aktiviert. Bitte überprüfe deine Emails.'
+                'Account is not yet activated pleade check your emails.'
             )
+
+        return data
+
+
+class PasswordResetSerializer(serializers.Serializer):
+    email = serializers.EmailField(requiered=True)
+
+    def validate_email(self, value):
+        if not User.objects.filter(email=value, is_active=True).exists():
+            pass
+        return value
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    new_password = serializers.CharField(write_only=True, required=True)
+    confirmed_password = serializers.CharField(write_only=True, required=True)
+
+    def validate(self, data):
+        if data['new_password'] != data['confirm_password']:
+            raise serializers.ValidationError({ "confirm_password": "passwords do not match"})
+
+        try:
+            validate_password(data['new_password'])
+        except ValidationError as error:
+            raise serializers.ValidationError({
+                "new_password": list(error.messages)
+            })
 
         return data

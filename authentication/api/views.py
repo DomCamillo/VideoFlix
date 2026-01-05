@@ -225,7 +225,7 @@ def password_reset_request(request):
 def password_reset_confirm(request, uidb64, token):
     """
     POST /api/password_confirm/<uidb64>/<token>/
-    Setzt neues Passwort
+    set a new passowrd
     """
     serializer = PasswordResetConfirmSerializer(data=request.data)
 

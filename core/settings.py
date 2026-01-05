@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'rest_framework',
     'django_rq',
     'rest_framework_simplejwt',
@@ -52,6 +53,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -98,7 +100,12 @@ RQ_QUEUES = {
     },
 }
 
-
+CORS_ALLOW_ORIGINS =[
+     "http://localhost:4200",
+    "http://127.0.0.1:4200",
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
+]
 
 
 

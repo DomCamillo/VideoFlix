@@ -8,6 +8,10 @@ from django.core.exceptions import ValidationError
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
+    """
+    Validates and Create Users Email and Password and sets is_active to False.
+    The user must verify their email to activate the account.
+    """
     password = serializers.CharField(write_only=True)
     confirmed_password = serializers.CharField(write_only=True)
 
@@ -55,7 +59,6 @@ class CostumeTokenObtainPairSerializer(TokenObtainPairSerializer):
             self.fields.pop("username")
 
     def validate(self, attrs):
-        print("hello")
         email = attrs.get("email")
         password = attrs.get("password")
 

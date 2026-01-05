@@ -39,8 +39,8 @@ def send_verification_email(user, request):
         print(f" Email erfolgreich an {user.email} gesendet!")
         print(f" Activation Link: {activation_link}")
         return True
-    except Exception as e:
-        print(f"Email-Versand Fehler: {e}")
+    except Exception as error:
+        print(f"Email-Versand Fehler: {error}")
         return False
 
 

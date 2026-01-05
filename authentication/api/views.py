@@ -32,7 +32,7 @@ def register(request):
         if not email_sent:
             user.delete()
             return Response({
-                'error': 'Email konnte nicht versendet werden.'
+                'error': 'could not send Email.'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         token_obj = EmailVerificationToken.objects.filter(user=user).first()
@@ -219,6 +219,8 @@ def password_reset_request(request):
         }, status=status.HTTP_200_OK)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 @api_view(['POST'])
 @permission_classes([AllowAny])

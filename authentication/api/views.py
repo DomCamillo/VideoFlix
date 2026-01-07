@@ -1,4 +1,5 @@
 from rest_framework import status
+from django.shortcuts import redirect
 from authentication.models import EmailVerificationToken , User, PasswordResetToken
 from authentication.api.serializers import RegistrationSerializer
 from django.utils.http import urlsafe_base64_decode
@@ -258,3 +259,33 @@ def password_reset_confirm(request, uidb64, token):
 
     reset_token.delete()
     return Response({'detail': 'Your Password has been successfully reset.' }, status=status.HTTP_200_OK)
+
+
+# @api_view(['GET'])
+# @permission_classes([AllowAny])
+# def password_reset_redirect(request, uidb64, token):
+#     """
+#     GET /api/reset-password/<uidb64>/<token>/
+#     Validates token and redirects to frontend
+#     """
+#     try:
+#         uid = force_str(urlsafe_base64_decode(uidb64))
+#         user = User.objects.get(pk=uid)
+#     except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+#         return Response({'error': 'Invalid reset link.'}, status=status.HTTP_400_BAD_REQUEST)
+
+#     try:
+#         reset_token = PasswordResetToken.objects.get(user=user, token=token)
+#     except PasswordResetToken.DoesNotExist:
+#         return Response({'error': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
+
+#     if not reset_token.is_valid():
+#         reset_token.delete()
+#         return Response({'error': 'This reset link has expired.'}, status=status.HTTP_400_BAD_REQUEST)
+
+#     frontend_url = f"{request.scheme}://{request.META.get('HTTP_ORIGIN', 'http://localhost:5500')}/reset-password.html?uid={uidb64}&token={token}"
+#     return redirect(frontend_url)
+
+
+
+

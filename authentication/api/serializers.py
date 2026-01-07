@@ -74,6 +74,8 @@ class CostumeTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 
 class EmailTokenObtainSerializer(TokenObtainPairSerializer):
+    """allows user to JWT login with email instead of username
+    and prevents inactive users from login"""
 
     username_field = 'email'
 

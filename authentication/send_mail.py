@@ -1,10 +1,11 @@
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMultiAlternatives
 from django.conf import settings
 from django.template.loader import render_to_string
 from .models import EmailVerificationToken
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from .models import PasswordResetToken
+from django.utils.html import strip_tags
 
 def send_verification_email(user, request):
 
@@ -16,31 +17,29 @@ def send_verification_email(user, request):
     activation_link = f"{request.scheme}://{request.get_host()}/api/activate/{uidb64}/{token}/"
 
     subject ='Verify your email address'
-    message = f"""
-    Welcome {user.username},
-
-    Please verify your email address by clicking the link below:
-
-    {activation_link}
-
-    This link will expire in 24 hours.
 
 
-    """
+    html_content = render_to_string('verification_email.html', {
+        'username': user.username,
+        'activation_link': activation_link,
+    })
+
+    text_content = strip_tags(html_content)
+
 
     try:
-        send_mail(
+        email = EmailMultiAlternatives(
             subject=subject,
-            message=message,
+            body=text_content,
             from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user.email],
-            fail_silently=False,
+            to=[user.email]
         )
-        print(f" Email erfolgreich an {user.email} gesendet!")
-        print(f" Activation Link: {activation_link}")
+        email.attach_alternative(html_content, "text/html")
+        email.send(fail_silently=False)
+        print(f" Succesfully send email to {user.email} ")
         return True
     except Exception as error:
-        print(f"Email-Versand Fehler: {error}")
+        print(f"Emial sent error: {error}")
         return False
 
 
@@ -51,31 +50,27 @@ def send_password_reset_email(user, request):
     uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
     token = str(token_obj.token)
 
-    reset_link = f"{request.scheme}://{request.get_host()}/api/password_confirm/{uidb64}/{token}/"
+    reset_link = f"http://localhost:5500/pages/auth/confirm_password.html?uid={uidb64}&token={token}"
 
     subject ='Password Reset Request'
-    message = f"""
-    Hello {user.username},
 
-    We received a request to reset your password. Click the link below to set a new password:
-
-    {reset_link}
-
-    This link will expire in 1 hour. If you did not request a password reset, please ignore this email.
-
-    """
+    html_content = render_to_string('password_reset.html', {
+    'username': user.username,
+    'reset_link': reset_link,
+    })
+    text_content = strip_tags(html_content)
 
     try:
-        send_mail(
+        email = EmailMultiAlternatives(
             subject=subject,
-            message=message,
+            body=text_content,
             from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user.email],
-            fail_silently=False,
+            to=[user.email]
         )
-        print(f" Password reset email successfully sent to {user.email}!")
-        print(f" Reset Link: {reset_link}")
+        email.attach_alternative(html_content, "text/html")
+        email.send(fail_silently=False)
+        print(f" Succesfully send email to {user.email} ")
         return True
     except Exception as error:
-        print(f"Password reset email sending error: {error}")
+        print(f"Emial sent error: {error}")
         return False

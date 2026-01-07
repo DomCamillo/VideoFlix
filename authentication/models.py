@@ -9,6 +9,8 @@ from datetime import timedelta
 
 
 class User(AbstractUser):
+    """Costume user model using email as username field,
+    to login with email and password. is_active gets set to True when user verifies email."""
     email = models.EmailField(unique=True)
     is_active= models.BooleanField(default=False)
     USERNAME_FIELD = 'email'

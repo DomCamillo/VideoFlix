@@ -4,25 +4,24 @@ from authentication.models import EmailVerificationToken , User, PasswordResetTo
 from authentication.api.serializers import RegistrationSerializer
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
-from ..send_mail import send_verification_email, send_password_reset_email
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .serializers import RegistrationSerializer, CostumeTokenObtainPairSerializer,PasswordResetSerializer, PasswordResetConfirmSerializer
+from .serializers import RegistrationSerializer,PasswordResetSerializer, PasswordResetConfirmSerializer
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
 
 
-
+from ..send_mail import send_verification_email, send_password_reset_email
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register(request):
-    """This endpoint handles user registration by validating the incoming data
+    """The register view handles user registration by validating the incoming data
     creating a new user, and sending an email verification link.
     If email delivery fails, the user is deleted"""
     serializer = RegistrationSerializer(data=request.data)
@@ -55,9 +54,10 @@ def register(request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def activate(request, uidb64, token):
-    """ This endpoint handles account activation by decoding the user ID from the URL
+    """ Activate view handles account activation by extract and decoding the user ID from the URL
     validating the email verification token,
-    and activating the user account if the token is valid"""
+    and setting is_active on True if the token is valid.
+    Deletes the token after successful activation."""
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=uid)
@@ -259,32 +259,6 @@ def password_reset_confirm(request, uidb64, token):
 
     reset_token.delete()
     return Response({'detail': 'Your Password has been successfully reset.' }, status=status.HTTP_200_OK)
-
-
-# @api_view(['GET'])
-# @permission_classes([AllowAny])
-# def password_reset_redirect(request, uidb64, token):
-#     """
-#     GET /api/reset-password/<uidb64>/<token>/
-#     Validates token and redirects to frontend
-#     """
-#     try:
-#         uid = force_str(urlsafe_base64_decode(uidb64))
-#         user = User.objects.get(pk=uid)
-#     except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-#         return Response({'error': 'Invalid reset link.'}, status=status.HTTP_400_BAD_REQUEST)
-
-#     try:
-#         reset_token = PasswordResetToken.objects.get(user=user, token=token)
-#     except PasswordResetToken.DoesNotExist:
-#         return Response({'error': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
-
-#     if not reset_token.is_valid():
-#         reset_token.delete()
-#         return Response({'error': 'This reset link has expired.'}, status=status.HTTP_400_BAD_REQUEST)
-
-#     frontend_url = f"{request.scheme}://{request.META.get('HTTP_ORIGIN', 'http://localhost:5500')}/reset-password.html?uid={uidb64}&token={token}"
-#     return redirect(frontend_url)
 
 
 

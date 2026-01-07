@@ -8,6 +8,11 @@ from .models import PasswordResetToken
 from django.utils.html import strip_tags
 
 def send_verification_email(user, request):
+    """When the user signs up, a token is generated and an email is sent to the user with a verification link.
+    The link contains the encoded user ID and the token. User must click the link to activate the account.
+    Html email template is used to send the email,
+    falls back to plain text if html email fails to send.
+    """
 
     token_obj = EmailVerificationToken.objects.create(user=user)
 
@@ -69,7 +74,7 @@ def send_password_reset_email(user, request):
         )
         email.attach_alternative(html_content, "text/html")
         email.send(fail_silently=False)
-        print(f" Succesfully send email to {user.email} ")
+        print(f" Successfully send email to {user.email} ")
         return True
     except Exception as error:
         print(f"Emial sent error: {error}")

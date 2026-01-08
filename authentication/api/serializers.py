@@ -10,7 +10,7 @@ from django.core.exceptions import ValidationError
 class RegistrationSerializer(serializers.ModelSerializer):
     """
     Validates and Create Users Email and Password and sets is_active to False.
-    The user must verify their email to activate the account.
+    The user must verify their email first to activate the account.
     """
     password = serializers.CharField(write_only=True)
     confirmed_password = serializers.CharField(write_only=True)
@@ -51,7 +51,7 @@ User = get_user_model()
 
 
 class EmailTokenObtainSerializer(TokenObtainPairSerializer):
-    """allows user to JWT login with email instead of username
+    """allows user to use JWT login with email instead of username
     and prevents inactive users from login"""
 
     username_field = 'email'

@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     'django_rq',
     'rest_framework_simplejwt',
 
-    'video',
+    'video_content.apps.ContentConfig',
     'authentication',
 
 ]
@@ -108,7 +108,7 @@ CORS_ALLOWED_ORIGINS =[
     "http://127.0.0.1:5500",
 ]
 
-CORS_ALLOW_CREDENTIALS = True # importent for JWT/Cookies
+CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = 'core.urls'
 
@@ -233,5 +233,3 @@ TEMPLATES = [
     },
 ]
 
-print(f"🔍 BASE_DIR: {BASE_DIR}")
-print(f"🔍 TEMPLATES DIR: {BASE_DIR / 'templates'}")

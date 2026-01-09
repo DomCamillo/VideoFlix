@@ -70,3 +70,5 @@ docker-compose.override.yml
 Thumbs.db
 
 # === Test / Coverage ===
+
+media

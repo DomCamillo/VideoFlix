@@ -3,7 +3,7 @@ from django.db import models
 
 class Video(models.Model):
     title = models.CharField(max_length=255)
-    description = models.TextField()
+    description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     thumbnail = models.ImageField(upload_to='thumbnails/', blank=True,)
     category = models.CharField(max_length=50, blank=True, default='Comedy', choices=[

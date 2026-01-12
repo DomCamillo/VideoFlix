@@ -6,4 +6,4 @@ class ContentConfig(AppConfig):
     name = 'video_content'
 
 def ready(self):
-        import video_content.signals
+        from . import signals

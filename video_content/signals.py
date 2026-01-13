@@ -6,7 +6,8 @@ import django_rq
 
 @receiver(post_save, sender=Video)
 def video_post_safe(sender, instance, created, **kwargs):
-    """everytime a video is saved this signal is triggerd """
+    """everytime a video is saved this signal is triggerd
+    and the video processing tasks are queued"""
     if created and instance.video_file:
         print(f"Video {instance.title} has been uploaded")
         from video_content.tasks import process_video

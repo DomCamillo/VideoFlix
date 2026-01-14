@@ -44,13 +44,15 @@ def process_video(video_id):
         video.save()
 
 #ffmpeg -ss 00:00:10 -i input.mp4 -frames:v 1 thumbnail.jpg
+
 def generate_thumbnail(video_id, source_path):
-    """generates thumpnail for the video at 3 seconds"""
+    """generates thumbnail for the video at 3 seconds,
+    saves it to media/thumbnails/ and returns the path"""
     output_dir = os.path.join(settings.MEDIA_ROOT, 'thumbnails')
     os.makedirs(output_dir, exist_ok=True)
     os.chmod(output_dir, 0o777)
 
-    output_path = os.path.join(output_dir, f"video_{video_id}thumpnail.jpg")
+    output_path = os.path.join(output_dir, f"video_{video_id}.jpg")
     cmd = [
         'ffmpeg',
         '-y',
@@ -62,6 +64,22 @@ def generate_thumbnail(video_id, source_path):
         output_path
     ]
     try:
+        subprocess.run(
+            cmd,
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=30
+        )
+        print(f"Thumbnail created: {output_path}")
+        return f'thumbnails/video_{video_id}.jpg'
+
+    except subprocess.CalledProcessError as error:
+        print(f"Thumbnail failed to create: {error.stderr}")
+        return None
+    except subprocess.TimeoutExpired:
+        print(f"process took to long")
+        return None
 
 
 
@@ -87,7 +105,7 @@ def convert_hls(video_id, source_path):
 
         cmd = [
             'ffmpeg',
-            '-y'
+            '-y',
             '-i', source_path,
             '-vf', f'scale={scale}',
             '-c:v', 'libx264',
@@ -109,8 +127,7 @@ def convert_hls(video_id, source_path):
         except subprocess.CalledProcessError as error:
             print(f"Error converting to {res_name}: {error.stderr}")
             print(f"Return code: {error.returncode}")
-            print(f"STDERR: {error.output}")
-            print(f"STDOUT: {error.stdout}")
+
 
 
 

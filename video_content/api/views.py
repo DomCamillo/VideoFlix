@@ -15,11 +15,15 @@ def get_video(request):
     return Response(serializer.data)
 
 
+@api_view(['GET'])
+def get_HLSMasterPlaylist(request, movie_id, resolution):
+    video = get_object_or_404(Video, id=movie_id)
+    serializer = VideoSerializer(video)
+    return Response(serializer.data)
 
-def get_index(request, movie_id, resolution):
-    pass
 
 
-
-def get_segment(request, movie_id, resolution, segment):
-    pass
+def get_HLSVideoSegment(request, movie_id, resolution, segment):
+    video = get_object_or_404(Video, id=movie_id)
+    serializer = VideoSerializer(video)
+    return Response(serializer.data)

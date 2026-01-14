@@ -10,7 +10,7 @@ from datetime import timedelta
 
 class User(AbstractUser):
     """Costume user model using email as username field,
-    to login with email and password. is_active gets set to True when user verifies email."""
+    to login with email and password. is_active is set to True when user verifies email."""
     email = models.EmailField(unique=True)
     is_active= models.BooleanField(default=False)
     USERNAME_FIELD = 'email'
@@ -19,6 +19,7 @@ class User(AbstractUser):
 
 
 class EmailVerificationToken(models.Model):
+    """Creates a unique token for email verification upon user registration."""
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -32,6 +33,7 @@ class EmailVerificationToken(models.Model):
 
 
 class PasswordResetToken(models.Model):
+    """"Creates a unique token for password reset requests."""
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)

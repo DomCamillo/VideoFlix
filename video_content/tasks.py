@@ -9,11 +9,6 @@ Die DB sagt, wo sie liegen.
 Der Browser lädt URLs.
 HLS setzt die Dateien wieder zu einem Video zusammen."""
 
-
-
-
-
-
 #ffmpeg -i input.mp4 -codec: copy -start_number 0 -hls_time 10 -hls_list_size 0 -f hls output.m3u8 convert to hls format
 # ffmpeg -i input_video.mp4 -c copy -hls_time 5 - hls_list_size 0 -f hls output.m3u8
 
@@ -30,6 +25,11 @@ def process_video(video_id):
         source_path = video.video_file.path
         print(f"Source path: {source_path}")
 
+        thumbnail_path = generate_thumbnail(video_id , source_path)
+        if thumbnail_path:
+            video.thumbnail = thumbnail_path
+            video.save()
+
         convert_hls(video_id, source_path)
         video.status = 'completed'
         video.hls_480p_path =f'videos/hls/{video.id}/480p'
@@ -42,6 +42,26 @@ def process_video(video_id):
         print(f"{error}")
         video.status = 'failed'
         video.save()
+
+#ffmpeg -ss 00:00:10 -i input.mp4 -frames:v 1 thumbnail.jpg
+def generate_thumbnail(video_id, source_path):
+    """generates thumpnail for the video at 3 seconds"""
+    output_dir = os.path.join(settings.MEDIA_ROOT, 'thumbnails')
+    os.makedirs(output_dir, exist_ok=True)
+    os.chmod(output_dir, 0o777)
+
+    output_path = os.path.join(output_dir, f"video_{video_id}thumpnail.jpg")
+    cmd = [
+        'ffmpeg',
+        '-y',
+        '-i', source_path,
+        '-ss', '00:00:03',
+        '-vframes', '1',
+        '-vf', 'scale=1280:720',
+        '-q:v', '2',
+        output_path
+    ]
+    try:
 
 
 
@@ -89,7 +109,7 @@ def convert_hls(video_id, source_path):
         except subprocess.CalledProcessError as error:
             print(f"Error converting to {res_name}: {error.stderr}")
             print(f"Return code: {error.returncode}")
-            print(f"STDERR: {error.stderr}")
+            print(f"STDERR: {error.output}")
             print(f"STDOUT: {error.stdout}")
 
 

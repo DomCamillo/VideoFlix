@@ -9,7 +9,7 @@ from django.core.exceptions import ValidationError
 
 class RegistrationSerializer(serializers.ModelSerializer):
     """
-    Validates and Create Users Email and Password and sets is_active to False.
+    Validates and Create Users Email and Password and keeps is_active to False.
     The user must verify their email first to activate the account.
     """
     password = serializers.CharField(write_only=True)
@@ -73,7 +73,7 @@ class EmailTokenObtainSerializer(TokenObtainPairSerializer):
             raise AuthenticationFailed('invalid login data.')
         if not self.user.is_active:
             raise AuthenticationFailed(
-                'Account is not yet activated pleade check your emails.'
+                'Account is not yet activated please check your emails.'
             )
 
         return data
@@ -91,6 +91,7 @@ class PasswordResetSerializer(serializers.Serializer):
 class PasswordResetConfirmSerializer(serializers.Serializer):
     new_password = serializers.CharField(write_only=True, required=True)
     confirm_password = serializers.CharField(write_only=True, required=True)
+
 
     def validate(self, data):
         if data['new_password'] != data['confirm_password']:

@@ -15,7 +15,7 @@ def send_verification_email(user, request):
     """
 
     token_obj = EmailVerificationToken.objects.create(user=user)
-
+    """encodes the user ID in base64 and stringifies the token"""
     uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
     token = str(token_obj.token)
 
@@ -50,6 +50,7 @@ def send_verification_email(user, request):
 
 
 def send_password_reset_email(user, request):
+    """Sends a password reset email to the user with a link containing a token and encoded user ID."""
     token_obj = PasswordResetToken.objects.create(user=user)
 
     uidb64 = urlsafe_base64_encode(force_bytes(user.pk))

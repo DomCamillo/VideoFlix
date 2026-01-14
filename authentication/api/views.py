@@ -1,11 +1,9 @@
 from rest_framework import status
-from django.shortcuts import redirect
 from authentication.models import EmailVerificationToken , User, PasswordResetToken
 from authentication.api.serializers import RegistrationSerializer
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
 from rest_framework.views import APIView
-from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -35,6 +33,7 @@ def register(request):
                 'error': 'could not send Email.'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+        """this line is just for testing purposes, to see the token in the response"""
         token_obj = EmailVerificationToken.objects.filter(user=user).first()
 
         return Response({
@@ -54,7 +53,7 @@ def register(request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def activate(request, uidb64, token):
-    """ Activate view handles account activation by extract and decoding the user ID from the URL
+    """ Activate view handles account activation by extract and decoding the user ID from the URL,
     validating the email verification token,
     and setting is_active on True if the token is valid.
     Deletes the token after successful activation."""

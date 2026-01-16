@@ -16,26 +16,6 @@ class VideoSerializer(serializers.ModelSerializer):
                 return request.build_absolute_uri(obj.thumbnail.url)
         return None
 
-class HLSMasterPlaylistSerializer(serializers.Serializer):
-    movie_id = serializers.IntegerField()
-    resolution = serializers.CharField(max_length=10)
-
-    def validate_movie_id(self, value):
-        if not Video.objects.filter(id=value).exists():
-            raise ValidationError("Video with this ID does not exist.")
-        return value
 
 
-class HLSVideoSegmentSerializer(serializers.Serializer):
-    movie_id = serializers.IntegerField()
-    resolution = serializers.CharField(max_length=10)
-    segment = serializers.CharField(max_length=100)
 
-    def validate_movie_id(self, value):
-        if not Video.objects.filter(id=value).exists():
-            raise ValidationError("Video with this ID does not exist.")
-        return value
-    def validate_segment(self, value):
-        if not value.endswith('.ts'):
-            raise ValidationError("Segment must be a .ts file.")
-        return value

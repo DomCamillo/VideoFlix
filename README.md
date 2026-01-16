@@ -90,20 +90,26 @@ A Netflix-like video streaming platform built with Django REST Framework. The ap
 ```
 VideoFlix/
 ├── authentication/
+│   ├── api/
+│   │   ├── serializers.py  # Registration, Login, Password Reset
+│   │   ├── views.py        # Authentication endpoints
+│   │   └── urls.py         # Authentication URL patterns
 │   ├── models.py           # Custom User model, Token models
-│   ├── serializers.py      # Registration, Login, Password Reset
-│   ├── views.py            # Authentication endpoints
 │   ├── signals.py          # Email verification triggers
-│   └── utils.py            # Email sending utilities
+│   ├── utils.py            # Email sending utilities
+│   └── admin.py            # Admin configuration
 ├── video_content/
+│   ├── api/
+│   │   ├── serializers.py  # Video serializers
+│   │   ├── views.py        # Video streaming endpoints
+│   │   └── urls.py         # Video API URL patterns
 │   ├── models.py           # Video model
-│   ├── serializers.py      # Video serializers
-│   ├── views.py            # Video streaming endpoints
 │   ├── tasks.py            # Background tasks (FFMPEG processing)
-│   └── signals.py          # Video processing triggers
+│   ├── signals.py          # Video processing triggers
+│   └── admin.py            # Admin configuration
 ├── core/
 │   ├── settings.py         # Django settings
-│   ├── urls.py             # URL configuration
+│   ├── urls.py             # Main URL configuration
 │   └── wsgi.py             # WSGI configuration
 ├── templates/
 │   ├── verification_email.html
@@ -114,13 +120,21 @@ VideoFlix/
 │   │   └── hls/
 │   │       └── [video_id]/
 │   │           ├── 480p/
+│   │           │   ├── index.m3u8
+│   │           │   └── segment*.ts
 │   │           ├── 720p/
+│   │           │   ├── index.m3u8
+│   │           │   └── segment*.ts
 │   │           └── 1080p/
+│   │               ├── index.m3u8
+│   │               └── segment*.ts
 │   └── thumbnails/
+│       └── video_*.jpg
 ├── static/
 ├── docker-compose.yml
 ├── backend.Dockerfile
-└── requirements.txt
+├── requirements.txt
+└── .env
 ```
 
 ## Prerequisites

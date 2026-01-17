@@ -144,6 +144,7 @@ VideoFlix/
 
 ## Installation
 
+
 ### 1. Clone the repository
 ```bash
 git clone https://github.com/DomCamillo/videoflix.git
@@ -190,6 +191,19 @@ docker-compose up --build
 
 ### 4. Run migrations
 ```bash
+docker-compose exec web python manage.py migrate
+```
+
+### Known Issue: Migration Order !!!!
+
+If you encounter a migration dependency error, run migrations in this order:
+```bash
+
+docker-compose up -d
+
+docker-compose exec web python manage.py migrate auth
+docker-compose exec web python manage.py migrate authentication
+docker-compose exec web python manage.py migrate admin
 docker-compose exec web python manage.py migrate
 ```
 

@@ -41,6 +41,7 @@ poetry.lock
 *.pyo
 *.sqlite3
 db.sqlite3
+*.db
 media/
 staticfiles/
 
@@ -65,10 +66,14 @@ docker-compose.override.yml
 *.seed
 *.bak
 
+
+
 # === OS Files ===
 .DS_Store
 Thumbs.db
 
-# === Test / Coverage ===
+# WICHTIG: Migrations NICHT ignorieren!
+# Nur __pycache__ in migrations ignorieren
+**/migrations/__pycache__/
 
-media
+media/

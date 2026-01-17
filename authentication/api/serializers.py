@@ -80,6 +80,7 @@ class EmailTokenObtainSerializer(TokenObtainPairSerializer):
 
 
 class PasswordResetSerializer(serializers.Serializer):
+    """Serializer for requesting a password reset via email."""
     email = serializers.EmailField(required=True)
 
     def validate_email(self, value):

@@ -151,48 +151,38 @@ git clone https://github.com/DomCamillo/videoflix.git
 cd videoflix
 ```
 
-### 2. Create environment file
-
-Create a `.env` file in the root directory:
-```env
-# Django
-SECRET_KEY=your_secret_key_here
-DEBUG=True
-ALLOWED_HOSTS=localhost,127.0.0.1
-CSRF_TRUSTED_ORIGINS=http://localhost:5500,http://127.0.0.1:5500
-
-# Database
-DB_NAME=videoflix_db
-DB_USER=videoflix_user
-DB_PASSWORD=your_secure_password
-DB_HOST=db
-DB_PORT=5432
-
-# Redis
-REDIS_HOST=redis
-REDIS_LOCATION=redis://redis:6379/1
-REDIS_PORT=6379
-REDIS_DB=0
-
-# Email Configuration
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_HOST_USER=your_email@gmail.com
-EMAIL_HOST_PASSWORD=your_app_password
-EMAIL_USE_TLS=True
-EMAIL_USE_SSL=False
-DEFAULT_FROM_EMAIL=VideoFlix <your_email@gmail.com>
+### 2. Configure environment variables
+Copy the template and fill in your data:
+```bash
+cp .env.template .env
 ```
+
+Edit `.env` and set:
+- **DJANGO_SUPERUSER_EMAIL**: Your admin email (used for login!)
+- **DJANGO_SUPERUSER_USERNAME**: Your admin username
+- **DJANGO_SUPERUSER_PASSWORD**: Your admin password
+- **EMAIL_HOST_USER**: Your Gmail address
+- **EMAIL_HOST_PASSWORD**: Your Gmail App Password
+
+
 
 ### 3. Build and start containers
 ```bash
 docker-compose up --build
 ```
+This will automatically:
+-  Run database migrations
+-  Create a superuser with your `.env` credentials
+-  Start the RQ worker for background tasks
+-  Collect static files
 
-### 4. Run migrations
-```bash
-docker-compose exec web python manage.py migrate
-```
+
+**Admin Panel:**
+- URL: http://localhost:8000/admin
+- *** Login with EMAIL** (not username!): Use `DJANGO_SUPERUSER_EMAIL` from your `.env`
+- Password: Use `DJANGO_SUPERUSER_PASSWORD` from your `.env`
+
+---
 
 ### Known Issue: Migration Order !!!!
 
@@ -207,12 +197,9 @@ docker-compose exec web python manage.py migrate admin
 docker-compose exec web python manage.py migrate
 ```
 
-### 5. Create superuser
-```bash
-docker-compose exec web python manage.py createsuperuser
-```
 
-### 6. Start RQ Worker (in separate terminal)
+
+### 4. Start RQ Worker (in separate terminal)
 ```bash
 docker-compose exec web python manage.py rqworker default
 ```

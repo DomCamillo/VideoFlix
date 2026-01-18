@@ -19,7 +19,7 @@ def send_verification_email(user, request):
     uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
     token = str(token_obj.token)
 
-    activation_link = f"{request.scheme}://{request.get_host()}/api/activate/{uidb64}/{token}/"
+    activation_link = f"{settings.FRONTEND_URL}/pages/auth/activate.html?uid={uidb64}&token={token}"
 
     subject ='Verify your email address'
 
@@ -56,7 +56,7 @@ def send_password_reset_email(user, request):
     uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
     token = str(token_obj.token)
 
-    reset_link = f"http://localhost:5500/pages/auth/confirm_password.html?uid={uidb64}&token={token}"
+    reset_link = f"{settings.FRONTEND_URL}/pages/auth/confirm_password.html?uid={uidb64}&token={token}"
 
     subject ='Password Reset Request'
 

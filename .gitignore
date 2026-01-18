@@ -51,6 +51,8 @@ staticfiles/
 .env
 .env.*
 *.env
+# but allow template
+!.env.template
 
 # === VSCode ===
 .vscode/

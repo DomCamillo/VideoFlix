@@ -29,14 +29,24 @@ username = os.environ.get('DJANGO_SUPERUSER_USERNAME', 'admin')
 email = os.environ.get('DJANGO_SUPERUSER_EMAIL', 'admin@example.com')
 password = os.environ.get('DJANGO_SUPERUSER_PASSWORD', 'adminpassword')
 
-if not User.objects.filter(username=username).exists():
-    print(f"Creating superuser '{username}'...")
-    # Korrekter Aufruf: username hier übergeben
-    User.objects.create_superuser(username=username, email=email, password=password)
-    print(f"Superuser '{username}' created.")
+if not User.objects.filter(email=email).exists():  # Prüfe auf EMAIL statt username!
+    print(f"Creating superuser '{username}' with email '{email}'...")
+    user = User.objects.create_superuser(username=username, email=email, password=password)
+    user.is_active = True
+    user.save()
+    print(f"Superuser '{username}' created and activated.")
 else:
-    print(f"Superuser '{username}' already exists.")
+    print(f"Superuser with email '{email}' already exists.")
 EOF
+
+# if not User.objects.filter(username=username).exists():
+#     print(f"Creating superuser '{username}'...")
+#     # Korrekter Aufruf: username hier übergeben
+#     User.objects.create_superuser(username=username, email=email, password=password)
+#     print(f"Superuser '{username}' created.")
+# else:
+#     print(f"Superuser '{username}' already exists.")
+# EOF
 
 python manage.py rqworker default &
 

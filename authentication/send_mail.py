@@ -1,4 +1,4 @@
-from django.core.mail import send_mail, EmailMultiAlternatives
+
 from django.conf import settings
 from django.template.loader import render_to_string
 from .models import EmailVerificationToken
@@ -6,6 +6,10 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from .models import PasswordResetToken
 from django.utils.html import strip_tags
+
+import os
+from .models import EmailVerificationToken, PasswordResetToken
+from .email import EmailMultiRelated
 
 def send_verification_email(user, request):
     """When the user signs up, a token is generated and an email is sent to the user with a verification link.
@@ -31,21 +35,30 @@ def send_verification_email(user, request):
 
     text_content = strip_tags(html_content)
 
-
     try:
-        email = EmailMultiAlternatives(
+        email = EmailMultiRelated(
             subject=subject,
             body=text_content,
             from_email=settings.DEFAULT_FROM_EMAIL,
-            to=[user.email]
+            to=[user.email],
+
         )
         email.attach_alternative(html_content, "text/html")
+        logo_path = os.path.join(settings.BASE_DIR, 'assets', 'images', 'logo.png')
+
+        if os.path.exists(logo_path):
+            email.attach_related_file(logo_path, 'image/png')
         email.send(fail_silently=False)
+
         print(f" Succesfully send email to {user.email} ")
         return True
     except Exception as error:
         print(f"Emial sent error: {error}")
+
         return False
+
+
+
 
 
 
@@ -67,16 +80,24 @@ def send_password_reset_email(user, request):
     text_content = strip_tags(html_content)
 
     try:
-        email = EmailMultiAlternatives(
+        email = EmailMultiRelated(
             subject=subject,
             body=text_content,
             from_email=settings.DEFAULT_FROM_EMAIL,
-            to=[user.email]
+            to=[user.email],
+
         )
         email.attach_alternative(html_content, "text/html")
+        logo_path = os.path.join(settings.BASE_DIR, 'assets', 'images', 'logo.png')
+
+        if os.path.exists(logo_path):
+
+            email.attach_related_file(logo_path, 'image/png')
         email.send(fail_silently=False)
-        print(f" Successfully send email to {user.email} ")
+
+        print(f" Succesfully send email to {user.email} ")
         return True
     except Exception as error:
         print(f"Emial sent error: {error}")
+
         return False

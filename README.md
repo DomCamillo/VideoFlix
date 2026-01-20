@@ -165,6 +165,17 @@ Edit `.env` and set:
 - **EMAIL_HOST_PASSWORD**: Your Gmail App Password
 
 
+## Email Configuration
+
+For email functionality (registration, password reset), you need to configure Gmail:
+
+1. Enable 2FA in your Google Account
+2. Create an App Password: Google Account → Security → 2-Step Verification → App passwords (https://myaccount.google.com/apppasswords)
+3. Add to your `.env` file:
+```
+   EMAIL_HOST_USER=your-email@gmail.com
+   EMAIL_HOST_PASSWORD=your_16_digit_app_password
+```
 
 ### 3. Build and start containers
 ```bash

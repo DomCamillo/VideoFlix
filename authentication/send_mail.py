@@ -98,6 +98,6 @@ def send_password_reset_email(user, request):
         print(f" Succesfully send email to {user.email} ")
         return True
     except Exception as error:
-        print(f"Emial sent error: {error}")
-
+        print(f"Email could not send: {error}")
+        print(f"is your EMAIL_HOST_USER and EMAIL_HOST_PASSWORD correct?")
         return False

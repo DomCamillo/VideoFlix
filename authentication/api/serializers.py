@@ -61,6 +61,8 @@ class EmailTokenObtainSerializer(TokenObtainPairSerializer):
         self.fields['email'] = self.fields.pop('username')
         self.fields['email'].help_text = 'Email Adresse'
 
+    """
+    The email address is used as the username before authentication."""
     def validate(self, attrs):
         email = attrs.get('email')
         password = attrs.get('password')
@@ -90,6 +92,7 @@ class PasswordResetSerializer(serializers.Serializer):
 
 
 class PasswordResetConfirmSerializer(serializers.Serializer):
+    """Serializer for confirming and setting a new password."""
     new_password = serializers.CharField(write_only=True, required=True)
     confirm_password = serializers.CharField(write_only=True, required=True)
 

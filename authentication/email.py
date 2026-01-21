@@ -45,6 +45,7 @@ class EmailMultiRelated(EmailMultiAlternatives):
         )
 
     def _create_alternatives(self, msg):
+        """Replaces references to related attachments in HTML alternatives"""
         for i, alternative in enumerate(self.alternatives):
             if hasattr(alternative, 'content'):
                 content = alternative.content

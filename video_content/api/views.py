@@ -11,7 +11,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
 
 @api_view(['GET'])
-#@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def get_video(request):
     """GET /api/video/ - List of all Videos"""
     videos = Video.objects.filter(status='completed')
@@ -20,7 +20,7 @@ def get_video(request):
 
 
 @api_view(['GET'])
-#@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def get_HLSMasterPlaylist(request, movie_id, resolution):
     """GET /api/video/<movie_id>/<resolution>/index.m3u8
     Return the M3U8-Playlist file """
@@ -38,7 +38,7 @@ def get_HLSMasterPlaylist(request, movie_id, resolution):
 
 
 @api_view(['GET'])
-#@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def get_HLSVideoSegment(request, movie_id, resolution, segment):
     """ GET /api/video/<movie_id>/<resolution>/<segment>/
     Gets the video segments (.ts-Data)"""

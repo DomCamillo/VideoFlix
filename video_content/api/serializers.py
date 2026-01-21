@@ -3,6 +3,9 @@ from video_content.models import Video
 from django.core.exceptions import ValidationError
 
 class VideoSerializer(serializers.ModelSerializer):
+    """simple serializer for the Video model
+    Includes a method field to get the full URL of the thumbnail image.
+    """
     thumbnail_url = serializers.SerializerMethodField()
     class Meta:
         model = Video

@@ -2,12 +2,11 @@ import subprocess
 import os
 from django.conf import settings
 from .models import Video
-
-
-"""Dein Server speichert Videos als Dateien.
-Die DB sagt, wo sie liegen.
-Der Browser lädt URLs.
-HLS setzt die Dateien wieder zu einem Video zusammen."""
+"""process_video() - is the main function that orchestrates the video processing
+generate_thumbnail() - generates thumbnail by taking a frame from the video at 3 seconds
+and svaes it to media/thumbnails/
+convert_hls() - converts video to hls format in 3 different resolutions
+"""
 
 #ffmpeg -i input.mp4 -codec: copy -start_number 0 -hls_time 10 -hls_list_size 0 -f hls output.m3u8 convert to hls format
 # ffmpeg -i input_video.mp4 -c copy -hls_time 5 - hls_list_size 0 -f hls output.m3u8
